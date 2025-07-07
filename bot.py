@@ -1,30 +1,41 @@
+import os
 import logging
-from flask import Flask
-from config import TELEGRAM_TOKEN, PORT
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters
-from handlers import start, handle_message
 import asyncio
+import threading
+from flask import Flask
+from telegram.ext import ApplicationBuilder, CommandHandler
 
+# لاگ‌گذاری
 logging.basicConfig(level=logging.INFO)
+
+# متغیرها
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+PORT = int(os.environ.get("PORT", 10000))
 
 app = Flask(__name__)
 
 @app.route('/')
-def health_check():
-    return "✅ Bot is alive!", 200
+def home():
+    return "✅ Bot is alive!"
 
+# تابع هندلر
+async def start(update, context):
+    await update.message.reply_text("سلام! من آنلاینم 🤖")
+
+# تابع اجرای ربات
 async def run_bot():
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-
+    logging.info("✅ Starting Telegram polling...")
+    application = ApplicationBuilder().token(TOKEN).build()
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-    logging.info("Starting Telegram polling...")
     await application.run_polling()
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.create_task(run_bot())
+    # اجرای ربات در یک Thread جدا
+    def start_polling():
+        asyncio.run(run_bot())
 
-    logging.info(f"Starting Flask server on port {PORT}")
+    threading.Thread(target=start_polling).start()
+
+    # اجرای Flask برای باز بودن پورت
+    logging.info(f"🌱 Starting Flask server on port {PORT}")
     app.run(host="0.0.0.0", port=PORT)
