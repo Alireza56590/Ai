@@ -31,7 +31,6 @@ async def run_bot():
         logging.info("📦 Application built, adding handlers...")
         application.add_handler(CommandHandler("start", start))
         await application.run_polling()
-        logging.info("✅ Polling finished normally (should not happen)")
     except Exception as e:
         logging.error(f"❌ Exception in run_bot: {e}")
 
@@ -48,7 +47,4 @@ if __name__ == "__main__":
     threading.Thread(target=start_polling, name="PollingThread").start()
 
     logging.info(f"🌱 Starting Flask server on port {PORT}")
-    try:
-        app.run(host="0.0.0.0", port=PORT)
-    except Exception as e:
-        logging.error(f"❌ Exception in Flask server: {e}")
+    app.run(host="0.0.0.0", port=PORT)
