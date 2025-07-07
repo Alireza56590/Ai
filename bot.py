@@ -5,10 +5,8 @@ import threading
 from flask import Flask
 from telegram.ext import ApplicationBuilder, CommandHandler
 
-# لاگ‌گذاری
 logging.basicConfig(level=logging.INFO)
 
-# متغیرها
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 PORT = int(os.environ.get("PORT", 10000))
 
@@ -18,11 +16,9 @@ app = Flask(__name__)
 def home():
     return "✅ Bot is alive!"
 
-# تابع هندلر
 async def start(update, context):
     await update.message.reply_text("سلام! من آنلاینم 🤖")
 
-# تابع اجرای ربات
 async def run_bot():
     logging.info("✅ Starting Telegram polling...")
     application = ApplicationBuilder().token(TOKEN).build()
@@ -30,12 +26,13 @@ async def run_bot():
     await application.run_polling()
 
 if __name__ == "__main__":
-    # اجرای ربات در یک Thread جدا
     def start_polling():
-        asyncio.run(run_bot())
+        try:
+            asyncio.run(run_bot())
+        except Exception as e:
+            logging.error(f"❌ Error in polling: {e}")
 
     threading.Thread(target=start_polling).start()
 
-    # اجرای Flask برای باز بودن پورت
     logging.info(f"🌱 Starting Flask server on port {PORT}")
     app.run(host="0.0.0.0", port=PORT)
